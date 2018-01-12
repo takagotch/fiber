@@ -68,5 +68,39 @@ g = FibonacciGenerator.new
 g.rewind; puts
 10.times { print g.next, " " }
 
+#
+class Generator
+  def initialize(enumerable)
+    @enumerable = enumrable
+    create_fiber
+  end
+
+  def next
+    @fiber.resume
+  end
+
+  def rewind
+    create_fiber
+  end
+
+  private
+  def create_fiber
+    @fiber = Fiber.new do
+      @enumrable.each do |x|
+        Fiber.yield(x)
+      end
+      rails StopIteration
+    end
+  end
+end
+
+g = Generator.new(1..10)
+loop { print g.next }
+g.rewind
+g = (1..10).to_enum
+loop { print g.next }
+
+#
+
 
 
